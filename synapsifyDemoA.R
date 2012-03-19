@@ -1,5 +1,19 @@
 # synapsifyDemoA.R
 
+# AUTHORS
+# Erich S. Huang & Brian Bot
+# Sage Bionetworks
+# Seattle, Washington
+
+# SOURCE
+# https://github.com/Sage-Bionetworks/synapsify-demo
+
+# NOTES
+# This script represents one of the "Analytical Blocks" for the Synapsify demo
+# For this demonstration we source the TRANSBIG breast cancer expression
+# dataset, divide it into independent training and validation cohorts and 
+# build models of cell surface receptor "postivity".
+
 require(sss)
 require(Biobase)
 require(ggplot2)
@@ -30,8 +44,19 @@ trainScoreHat <- predict(sssERFit, newdata = t(trainExpress))
 
 trainScoreDF <- as.data.frame(cbind(trainScore, trainScoreHat))
 colnames(trainScoreDF) <- c("yTrain", "yTrainHat")
-ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + geom_boxplot() +
-  geom_jitter(aes(colour = as.factor(yTrain)))
+trainBoxPlot <- ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + 
+  geom_boxplot() +
+  geom_jitter(aes(colour = as.factor(yTrain)), size = 4) +
+  opts(title = "ER SSS Model Training Set Hat") +
+  ylab("Training Set ER Prediction") +
+  xlab("True ER Status") +
+  opts(plot.title = theme_text(size = 14))
+
+png(file = "trainBoxPlot.png", bg = "transparent", width = 1024, 
+    height = 768)
+trainBoxPlot
+dev.off()
+
 
 # VALIDATE & VISUALIZE WITH HELD OUT VALIDATION COHORT
 validScoreHat <- predict(sssERFit, newdata = t(validExpress))
@@ -39,12 +64,30 @@ validScoreDF <- as.data.frame(cbind(validScore, validScoreHat))
 colnames(validScoreDF) <- c("yValid", "yValidHat")
 validBoxPlot <- ggplot(validScoreDF, aes(factor(yValid), yValidHat)) + 
   geom_boxplot() +
-  geom_jitter(aes(colour = as.factor(yValid)))
+  geom_jitter(aes(colour = as.factor(yValid)), size = 4) +
+  opts(title = "ER SSS Model Indepenedent Validation Set") +
+  ylab("Validation Set ER Prediction") +
+  xlab("True ER Status") +
+  opts(plot.title = theme_text(size = 14))
+
+png(file = "validBoxPlot.png", bg = "transparent", width = 1024, 
+    height = 768)
+validBoxPlot
+dev.off()
 
 # Alternative visualization (density plots)
 validDensPlot <- ggplot(validScoreDF, aes(x = validScoreHat, 
                                           fill = factor(validScore))) + 
-  geom_density(alpha = 0.3)
+  geom_density(alpha = 0.3) +
+  opts(title = "ER SSS Model Independent Validation Set") +
+  ylab("Density") +
+  xlab("True ER Status") +
+  opts(plot.title = theme_text(size = 14))
+
+png(file = "validDensPlot.png", bg = "transparent", width = 1024, 
+    height = 768)
+validDensPlot
+dev.off()
 
 # EVALUATE VALIDATION MODEL PERFORMANCE
 erPred <- prediction(validScoreHat, validScore)
@@ -77,8 +120,18 @@ dfPerf <- as.data.frame(cbind(unlist(erPerf@x.values),
                               unlist(erPerf@y.values)))
 colnames(dfPerf) <- c("FalsePositiveRate", "TruePositiveRate")
 
-ggplot(dfPerf, aes(FalsePositiveRate, TruePositiveRate)) +
-  geom_line() + geom_abline(slope = 1, colour = "red")
+rocCurve <- ggplot(dfPerf, aes(FalsePositiveRate, TruePositiveRate)) +
+  geom_line() + 
+  geom_abline(slope = 1, colour = "red") +
+  opts(title = "Validation Cohort ROC Curve") +
+  ylab("False Positive Rate") +
+  xlab("True Positive Rate") +
+  opts(plot.title = theme_text(size = 14))
+
+png(file = "rocCurve.png", bg = "transparent", width = 768, 
+    height = 768)
+rocCurve
+dev.off()
 
 # AUROC = 0.88
 
@@ -157,3 +210,63 @@ modelDL <- storeEntity(modelDL)
 # 
 # loaded object(s):
 #   [1] "sssERFit" (sssBinaryResult)
+
+trainPlotADL <- Layer(list(name = "trainBoxPlot", 
+                           parentId = properties(erSSSModelDS)$id,
+                           type = "M"))
+trainPlotADL <- createEntity(trainPlotADL)
+trainPlotADL <- addFile(trainPlotADL, "trainBoxPlot.png")
+trainPlotADL <- storeEntity(trainPlotADL)
+# An object of class "Media"
+# Synapse Entity Name : trainBoxPlot
+# Synapse Entity Id   : 163008
+# Parent Id           : 163000
+# Type                : M
+# Version Number      : 1
+# Version Label       : 0.0.0
+# 
+# 0 File(s) cached in "/tmp/RtmpfJCBdn/cacheDir2b3d513bf2cc"
+
+validPlotADL <- Layer(list(name = "validBoxPlot", 
+                           parentId = properties(erSSSModelDS)$id,
+                           type = "M"))
+validPlotADL <- createEntity(validPlotADL)
+validPlotADL <- addFile(validPlotADL, "validBoxPlot.png")
+validPlotADL <- storeEntity(validPlotADL)
+# An object of class "Media"
+# Synapse Entity Name : validBoxPlot
+# Synapse Entity Id   : 163010
+# Parent Id           : 163000
+# Type                : M
+# Version Number      : 1
+# Version Label       : 0.0.0
+# 
+
+validPlotBDL <- Layer(list(name = "validDensityPlot", 
+                           parentId = properties(erSSSModelDS)$id,
+                           type = "M"))
+validPlotBDL <- createEntity(validPlotBDL)
+validPlotBDL <- addFile(validPlotBDL, "validDensPlot.png")
+validPlotBDL <- storeEntity(validPlotBDL)
+# An object of class "Media"
+# Synapse Entity Name : validDensityPlot
+# Synapse Entity Id   : 163012
+# Parent Id           : 163000
+# Type                : M
+# Version Number      : 1
+# Version Label       : 0.0.0
+
+validPlotCDL <- Layer(list(name = "rocCurve", 
+                           parentId = properties(erSSSModelDS)$id,
+                           type = "M"))
+validPlotCDL <- createEntity(validPlotCDL)
+validPlotCDL <- addFile(validPlotCDL, "rocCurve.png")
+validPlotCDL <- storeEntity(validPlotCDL)
+# An object of class "Media"
+# Synapse Entity Name : rocCurve
+# Synapse Entity Id   : 163014
+# Parent Id           : 163000
+# Type                : M
+# Version Number      : 1
+# Version Label       : 0.0.0
+
