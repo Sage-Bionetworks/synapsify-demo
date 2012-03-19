@@ -7,6 +7,7 @@ require(breastCancerTRANSBIG)
 require(ggplot2)
 require(ROCR)
 require(hgu133a.db)
+require(synapseClient)
 
 
 data(transbig)
@@ -21,7 +22,7 @@ validExpress <- expressData[ , randVec == 1]
 trainScore <- as.numeric(pheno@data$er[randVec == 0])
 validScore <- as.numeric(pheno@data$er[randVec == 1])
 
-## BINARY MODEL OF 'SCORE' USING SSS
+## BINARY MODEL OF 'ER Status' USING SSS
 sssERFit <- sss(trainScore ~ t(trainExpress))
 
 # EVALUATE AND VISUALIZE TRAINING Y-HAT
@@ -36,11 +37,13 @@ ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + geom_boxplot() +
 validScoreHat <- predict(sssERFit, newdata = t(validExpress))
 validScoreDF <- as.data.frame(cbind(validScore, validScoreHat))
 colnames(validScoreDF) <- c("yValid", "yValidHat")
-ggplot(validScoreDF, aes(factor(yValid), yValidHat)) + geom_boxplot() +
+validBoxPlot <- ggplot(validScoreDF, aes(factor(yValid), yValidHat)) + 
+  geom_boxplot() +
   geom_jitter(aes(colour = as.factor(yValid)))
 
 # Alternative visualization (density plots)
-ggplot(validScoreDF, aes(x = validScoreHat, fill = factor(validScore))) + 
+validDensPlot <- ggplot(validScoreDF, aes(x = validScoreHat, 
+                                          fill = factor(validScore))) + 
   geom_density(alpha = 0.3)
 
 # EVALUATE VALIDATION MODEL PERFORMANCE
@@ -56,6 +59,9 @@ optCut <- erPerf@alpha.values[[1]][jMax]
 
 optSens <- unlist(erSSPerf@x.values)[jMax]
 optSpec <- unlist(erSSPerf@y.values)[jMax]
+
+# Sensitivity at Youden's J-point = 0.91
+# Specificity at Youden's J-point = 0.79
 
 rankSum <- wilcox.test(validScoreHat[validScore == 0], 
                        validScoreHat[validScore == 1])
@@ -82,4 +88,72 @@ qplot(erPMP[1:20], geom = "histogram")
 topERGenes <- as.character(mget(names(erPMP)[1:25], hgu133aSYMBOL, 
                                  ifnotfound = NA))
 
+## PUSH INTERMEDIATE DATA AND MODEL OBJECTS TO SYNAPSE
+synapseLogin("synapsify@sagebase.org", "XXXXXXX")
+myProject <- Project(list(name = "Synapse Demonstration"))
+myProject <- createEntity(myProject)
+# An object of class "Project"
+# Synapse Entity Name : Synapse Demonstration
+# Synapse Entity Id   : 162999
+# Parent Id           : 4489
 
+erSSSModelDS <- Dataset(list(name = "ER SSS Model Construction",
+                             parentId = properties(myProject)$id))
+erSSSModelDS <- createEntity(erSSSModelDS)
+An object of class "Dataset"
+# Synapse Entity Name : ER SSS Model Construction
+# Synapse Entity Id   : 163000
+# Parent Id           : 162999
+# Version Number      : 1
+# Version Label       : 0.0.0
+
+trainDL <- Layer(list(name = "TRANSBIG Training Cohort", 
+                      parentId = properties(erSSSModelDS)$id,
+                      type = "E"))
+trainDL <- createEntity(trainDL)
+trainDL <- addObject(trainDL, trainExpress)
+trainDL <- storeEntity(trainDL)
+# An object of class "ExpressionLayer"
+# Synapse Entity Name : TRANSBIG Training Cohort
+# Synapse Entity Id   : 163002
+# Parent Id           : 163000
+# Type                : E
+# Version Number      : 1
+# Version Label       : 0.0.0
+# 
+# loaded object(s):
+#   [1] "trainExpress" (matrix)
+
+validDL <- Layer(list(name = "TRANSBIG Validation Cohort", 
+                      parentId = properties(erSSSModelDS)$id,
+                      type = "E"))
+validDL <- createEntity(validDL)
+validDL <- addObject(validDL, validExpress)
+validDL <- storeEntity(validDL)
+# An object of class "ExpressionLayer"
+# Synapse Entity Name : TRANSBIG Validation Cohort
+# Synapse Entity Id   : 163004
+# Parent Id           : 163000
+# Type                : E
+# Version Number      : 1
+# Version Label       : 0.0.0
+# 
+# loaded object(s):
+#   [1] "validExpress" (matrix)
+
+modelDL <- Layer(list(name = "TRANSBIG ER SSS Model Object", 
+                      parentId = properties(erSSSModelDS)$id,
+                      type = "E"))
+modelDL <- createEntity(modelDL)
+modelDL <- addObject(modelDL, sssERFit)
+modelDL <- storeEntity(modelDL)
+# An object of class "ExpressionLayer"
+# Synapse Entity Name : TRANSBIG ER SSS Model Object
+# Synapse Entity Id   : 163006
+# Parent Id           : 163000
+# Type                : E
+# Version Number      : 1
+# Version Label       : 0.0.0
+# 
+# loaded object(s):
+#   [1] "sssERFit" (sssBinaryResult)
