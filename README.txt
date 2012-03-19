@@ -1,0 +1,1 @@
+This represents source code associated with our prototyping of the "Synapsify" project. Harnessing the Synapse Platform for scientific communication.
