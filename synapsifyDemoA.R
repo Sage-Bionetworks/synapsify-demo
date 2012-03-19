@@ -6,6 +6,8 @@ require(ggplot2)
 require(breastCancerTRANSBIG)
 require(ggplot2)
 require(ROCR)
+require(hgu133a.db)
+
 
 data(transbig)
 expressData <- exprs(transbig)
@@ -22,7 +24,7 @@ validScore <- as.numeric(pheno@data$er[randVec == 1])
 ## BINARY MODEL OF 'SCORE' USING SSS
 sssERFit <- sss(trainScore ~ t(trainExpress))
 
-# evaluate y_hat
+# EVALUATE AND VISUALIZE TRAINING Y-HAT
 trainScoreHat <- predict(sssERFit, newdata = t(trainExpress))
 
 trainScoreDF <- as.data.frame(cbind(trainScore, trainScoreHat))
@@ -30,14 +32,18 @@ colnames(trainScoreDF) <- c("yTrain", "yTrainHat")
 ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + geom_boxplot() +
   geom_jitter(aes(colour = as.factor(yTrain)))
 
-# VALIDATE WITH HELD OUT COHORT
+# VALIDATE & VISUALIZE WITH HELD OUT VALIDATION COHORT
 validScoreHat <- predict(sssERFit, newdata = t(validExpress))
 validScoreDF <- as.data.frame(cbind(validScore, validScoreHat))
 colnames(validScoreDF) <- c("yValid", "yValidHat")
 ggplot(validScoreDF, aes(factor(yValid), yValidHat)) + geom_boxplot() +
   geom_jitter(aes(colour = as.factor(yValid)))
 
-# EVALUATE MODEL PERFORMANCE
+# Alternative visualization (density plots)
+ggplot(validScoreDF, aes(x = validScoreHat, fill = factor(validScore))) + 
+  geom_density(alpha = 0.3)
+
+# EVALUATE VALIDATION MODEL PERFORMANCE
 erPred <- prediction(validScoreHat, validScore)
 erPerf <- performance(erPred, "tpr", "fpr")
 erAUC <- performance(erPred, "auc")
@@ -72,5 +78,8 @@ ggplot(dfPerf, aes(FalsePositiveRate, TruePositiveRate)) +
 
 ## LET'S INSPECT HIGHLY WEIGHTED FEATURES
 erPMP <- sssERFit@postMargProb
-pmpHist <- qplot(erPMP, geom = "histogram")
+qplot(erPMP[1:20], geom = "histogram")
+topERGenes <- as.character(mget(names(erPMP)[1:25], hgu133aSYMBOL, 
+                                 ifnotfound = NA))
+
 
