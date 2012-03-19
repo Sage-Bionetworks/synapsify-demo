@@ -270,3 +270,11 @@ validPlotCDL <- storeEntity(validPlotCDL)
 # Version Number      : 1
 # Version Label       : 0.0.0
 
+predictionsDL <- Layer(list(name = "Validation Cohort Predictions", 
+                      parentId = properties(erSSSModelDS)$id,
+                      type = "E"))
+predictionsDL <- createEntity(predictionsDL)
+predictionsDL <- addObject(predictionsDL, validScoreHat)
+predictionsDL <- storeEntity(predictionsDL)
+
+
