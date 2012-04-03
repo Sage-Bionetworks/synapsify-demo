@@ -5,14 +5,17 @@
 # "training" and "validation" cohorts and concomitantly dividing the clinical
 # "ER Status" phenotype along with the cohorts
 
+transbigRandomCohorts <- function(){
 # SOURCE IN NECESSARY LIBRARIES
 require(synapseClient)
+require(Biobase)
 
 # LOGIN TO SYNAPSE
-synapseLogin("public@sagebase.org", "public")
+synapseLogin()
 
 # LOAD THE SYNAPSE ENTITY INTO MEMORY
-transbig <- loadEntity(169192)
+dataEnt <- loadEntity(169192)
+transbig <- dataEnt$objects$transbig
 expressData <- exprs(transbig)
 pheno <- phenoData(transbig)
 
@@ -25,4 +28,4 @@ trainScore <- as.numeric(pheno@data$er[randVec == 0])
 validScore <- as.numeric(pheno@data$er[randVec == 1])
 
 # END CODE ENTITY 1
-
+}
