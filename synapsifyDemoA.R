@@ -12,7 +12,7 @@
 # This script represents one of the "Analytical Blocks" for the Synapsify demo
 # For this demonstration we source the TRANSBIG breast cancer expression
 # dataset, divide it into independent training and validation cohorts and 
-# build models of cell surface receptor "postivity".
+# build models of cell surface receptor "positivity".
 
 require(sss)
 require(Biobase)
