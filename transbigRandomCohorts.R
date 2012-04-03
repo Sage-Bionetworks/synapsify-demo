@@ -27,5 +27,11 @@ validExpress <- expressData[ , randVec == 1]
 trainScore <- as.numeric(pheno@data$er[randVec == 0])
 validScore <- as.numeric(pheno@data$er[randVec == 1])
 
+return(list("randVec" = randVec,
+            "trainExpress" = trainExpress,
+            "validExpress" = validExpress,
+            "trainScore" = trainScore,
+            "validScore" = validScore))
+
 # END CODE ENTITY 1
 }
