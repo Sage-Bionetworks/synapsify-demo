@@ -32,3 +32,13 @@ codeEntityOneLayer <- Code(list(name = "CodeEntityOne",
 codeEntityOneLayer <- createEntity(codeEntityOneLayer)
 codeEntityOneLayer <- addFile(codeEntityOneLayer, "transbigRandomCohorts.R")
 codeEntityOneLayer <- storeEntity(codeEntityOneLayer)
+
+# SAVE CODE ENTITY TWO
+codeEntityTwoLayer <- Code(list(name = "CodeEntityTwo",
+                                parentId = 162999))
+codeEntityTwoLayer <- createEntity(codeEntityTwoLayer)
+codeEntityTwoLayer <- addFile(codeEntityTwoLayer, "codeEntityTwo.R")
+codeEntityTwoLayer <- storeEntity(codeEntityTwoLayer)
+
+
+
