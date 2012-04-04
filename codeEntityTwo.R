@@ -110,7 +110,7 @@ validateModel <- function(codeEntTwoReturn){
          "rankSum" = rankSum,
          "rocCurve" = rocCurve,
          "sensitivity" = optSens,
-         "specificity" = optSpec
+         "specificity" = optSpec,
          "auc" = erAUC[[2]])
   
 }
