@@ -3,3 +3,7 @@
 .RData
 nullfile.txt
 .png
+validDensPlot.png
+validBoxPlot.png
+trainBoxPlot.png
+rocCurve.png
