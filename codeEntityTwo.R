@@ -12,14 +12,15 @@ require(randomForest)
 
 ## BINARY MODEL OF 'ER Status' USING SSS
 sssERFit <- randomForest(t(returnOne$trainExpress), 
-                         returnOne$trainScore, 
+                         factor(returnOne$trainScore), 
                          ntree = 50,
                          do.trace = 5)
 
 # EVALUATE AND VISUALIZE TRAINING Y-HAT
-trainScoreHat <- predict(sssERFit, t(trainExpress))
+trainScoreHat <- predict(sssERFit, t(returnOne$trainExpress),
+                         type = "prob")
 
-trainScoreDF <- as.data.frame(cbind(trainScore, trainScoreHat))
+trainScoreDF <- as.data.frame(cbind(returnOne$trainScore, trainScoreHat))
 colnames(trainScoreDF) <- c("yTrain", "yTrainHat")
 trainBoxPlot <- ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + 
   geom_boxplot() +
@@ -32,32 +33,29 @@ trainBoxPlot <- ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) +
 
 return(list("sssERFit " = sssERFit,
             "trainBoxPlot" = trainBoxPlot,
-            "codeEntOneReturn" = outputOne)) # Workaround here
+            "returnOne" = returnOne)) # Workaround here
 }
 
 
 
 
 
-
-
-
-
 ## CODE ENTITY TWO: FUNCTION B
-validateModel <- function(codeEntTwoReturn){
+validateModel <- function(returnTwo){
   
   # SOURCE LIBRARIES
-  require(sss)
+  require(randomForest)
   require(ggplot2)
   require(ROCR)
   
   # DEFINE VARIABLES
-  sssERFit <- codeEntTwoReturn$sssERFit
-  validExpress <- codeEntTwoReturn$codeEntOneReturn$validExpress
-  validScore <- codeEntTwoReturn$codeEntOneReturn$validScore
+  sssERFit <- returnTwo$sssERFit
+  validExpress <- returnTwo$returnOne$validExpress
+  validScore <- returnTwo$returnOne$validScore
   
   # VALIDATE & VISUALIZE WITH HELD OUT VALIDATION COHORT
-  validScoreHat <- predict(sssERFit, newdata = t(validExpress))
+  validScoreHat <- predict(sssERFit, t(validExpress), type = "prob")
+  validScoreHat <- validScoreHat[ , 2]
   validScoreDF <- as.data.frame(cbind(validScore, validScoreHat))
   colnames(validScoreDF) <- c("yValid", "yValidHat")
   validBoxPlot <- ggplot(validScoreDF, aes(factor(yValid), yValidHat)) + 
@@ -70,15 +68,15 @@ validateModel <- function(codeEntTwoReturn){
   
   # Alternative visualization (density plots)
   validDensPlot <- ggplot(validScoreDF, 
-                          aes(x = validScoreHat, 
-                              fill = factor(validScore))) + 
+                          aes(yValidHat, 
+                              fill = factor(yValid))) + 
                                 geom_density(alpha = 0.3) +
                                 ylab("Density") +
                                 xlab("True ER Status") +
                                 opts(plot.title = theme_text(size = 14))
   
   # EVALUATE VALIDATION MODEL PERFORMANCE
-  erPred <- prediction(validScoreHat, validScore)
+  erPred <- prediction(as.numeric(validScoreHat), as.numeric(validScore))
   erPerf <- performance(erPred, "tpr", "fpr")
   erAUC <- performance(erPred, "auc")
   
@@ -108,13 +106,13 @@ validateModel <- function(codeEntTwoReturn){
     opts(plot.title = theme_text(size = 14))
   
   ## RETURN
-  return("validScoreDF" = validScoreDF,
+  return(list("validScoreDF" = validScoreDF,
          "validBoxPlot" = validBoxPlot,
          "validDensPlot" = validDensPlot,
          "rankSum" = rankSum,
          "rocCurve" = rocCurve,
          "sensitivity" = optSens,
          "specificity" = optSpec,
-         "auc" = erAUC[[2]])
+         "auc" = erAUC@y.values))
   
 }

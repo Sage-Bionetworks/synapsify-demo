@@ -26,11 +26,11 @@ transbLayer <- addObject(transbLayer, transbig)
 transbLayer <- storeEntity(transbLayer)
 
 
-# SAVE CODE ENTITY ONE "TRANSBIGRANDOMCOHORTS"
+# SAVE CODE ENTITY ONE 
 codeEntityOneLayer <- Code(list(name = "CodeEntityOne",
                                 parentId = 162999))
 codeEntityOneLayer <- createEntity(codeEntityOneLayer)
-codeEntityOneLayer <- addFile(codeEntityOneLayer, "transbigRandomCohorts.R")
+codeEntityOneLayer <- addFile(codeEntityOneLayer, "codeEntityOne.R")
 codeEntityOneLayer <- storeEntity(codeEntityOneLayer)
 
 # SAVE CODE ENTITY TWO
