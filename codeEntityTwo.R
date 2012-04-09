@@ -9,13 +9,18 @@ transbigERModelBuild <- function(returnValue){
 require(ggplot2)
 require(sss)
 
+# DEFINE VARIABLES
+trainScore <- returnValue$trainScore
+trainExpress <- returnValue$trainExpress
+
+
 ## BINARY MODEL OF 'ER Status' USING SSS
-sssERFit <- sss(returnValue$trainScore ~ t(returnValue$trainExpress))
+sssERFit <- sss(trainScore ~ t(trainExpress))
 
 # EVALUATE AND VISUALIZE TRAINING Y-HAT
-trainScoreHat <- predict(sssERFit, newdata = t(returnValue$trainExpress))
+trainScoreHat <- predict(sssERFit, newdata = t(trainExpress))
 
-trainScoreDF <- as.data.frame(cbind(returnValue$trainScore, trainScoreHat))
+trainScoreDF <- as.data.frame(cbind(trainScore, trainScoreHat))
 colnames(trainScoreDF) <- c("yTrain", "yTrainHat")
 trainBoxPlot <- ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) + 
   geom_boxplot() +
