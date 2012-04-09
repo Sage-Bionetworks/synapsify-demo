@@ -1,24 +1,23 @@
-# codeEntityTwo.R
+# codeEntityThree.R
 
-# Code Entity 2 of the Synapsify Demo Project
+# Code Entity 3 of the Synapsify Demo Project
 # Taking the output from Code Entity 1, generating a model for ER status
 
+
 ## CODE ENTITY TWO: FUNCTION A
-buildModel <- function(returnValue){
+buildModel <- function(returnOne){
 # SOURCE NECESSARY LIBRARIES
 require(ggplot2)
-require(sss)
-
-# DEFINE VARIABLES
-trainScore <- returnValue$trainScore
-trainExpress <- returnValue$trainExpress
-
+require(randomForest)
 
 ## BINARY MODEL OF 'ER Status' USING SSS
-sssERFit <- sss(trainScore ~ t(trainExpress))
+sssERFit <- randomForest(t(returnOne$trainExpress), 
+                         returnOne$trainScore, 
+                         ntree = 50,
+                         do.trace = 5)
 
 # EVALUATE AND VISUALIZE TRAINING Y-HAT
-trainScoreHat <- predict(sssERFit, newdata = t(trainExpress))
+trainScoreHat <- predict(sssERFit, t(trainExpress))
 
 trainScoreDF <- as.data.frame(cbind(trainScore, trainScoreHat))
 colnames(trainScoreDF) <- c("yTrain", "yTrainHat")
@@ -33,7 +32,7 @@ trainBoxPlot <- ggplot(trainScoreDF, aes(factor(yTrain), yTrainHat)) +
 
 return(list("sssERFit " = sssERFit,
             "trainBoxPlot" = trainBoxPlot,
-            "codeEntOneReturn" = returnValue))
+            "codeEntOneReturn" = outputOne)) # Workaround here
 }
 
 
