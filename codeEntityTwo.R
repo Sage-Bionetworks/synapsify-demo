@@ -4,7 +4,7 @@
 # Taking the output from Code Entity 1, generating a model for ER status
 
 ## CODE ENTITY TWO: FUNCTION A
-transbigERModelBuild <- function(returnValue){
+buildModel <- function(returnValue){
 # SOURCE NECESSARY LIBRARIES
 require(ggplot2)
 require(sss)

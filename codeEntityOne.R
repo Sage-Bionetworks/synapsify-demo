@@ -1,11 +1,11 @@
-# transbigRandomCohorts.R
+# codeEntityOne.R
 
 # Code Entity 1 of the Synapsify Demo Project
 # Taking the full TRANSBIG breast cancer dataset and randomly dividing it into
 # "training" and "validation" cohorts and concomitantly dividing the clinical
 # "ER Status" phenotype along with the cohorts
 
-transbigRandomCohorts <- function(){
+generateCohorts <- function(){
 # SOURCE IN NECESSARY LIBRARIES
 require(synapseClient)
 require(Biobase)
