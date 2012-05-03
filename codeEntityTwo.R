@@ -1,6 +1,6 @@
-# codeEntityThree.R
+# codeEntityTwo.R
 
-# Code Entity 3 of the Synapsify Demo Project
+# Code Entity 2 of the Synapsify Demo Project
 # Taking the output from Code Entity 1, generating a model for ER status
 
 
